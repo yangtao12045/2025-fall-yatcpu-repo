@@ -189,6 +189,19 @@ class InstructionDecode extends Module {
     ALUOp2Source.Immediate,
     ALUOp2Source.Register
   )
+
+  io.memory_read_enable := (opcode === InstructionTypes.L)
+  io.memory_write_enable := (opcode === InstructionTypes.S)
+
+  io.wb_reg_write_source := MuxLookup(
+    opcode,
+    RegWriteSource.ALUResult,
+    IndexedSeq(
+      InstructionTypes.L -> RegWriteSource.Memory,
+      Instructions.jal -> RegWriteSource.NextInstructionAddress,
+      Instructions.jalr -> RegWriteSource.NextInstructionAddress
+    )
+  )
   io.reg_write_enable := (opcode === InstructionTypes.RM) || (opcode === InstructionTypes.I) ||
     (opcode === InstructionTypes.L) || (opcode === Instructions.auipc) || (opcode === Instructions.lui) ||
     (opcode === Instructions.jal) || (opcode === Instructions.jalr)
